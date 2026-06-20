@@ -2,7 +2,7 @@
 
 ## Identidad del Proyecto
 
-**Nombre:** Dinámicas de Aprobación
+**Nombre:** Dinámicas de Aprobación en Entornos Digitales
 **Repositorio:** https://github.com/juandelaf1/Dinamicas-De-Aprobacion
 **Objetivo:** Analizar, diagnosticar y proponer soluciones sobre búsqueda de aprobación social, sentido de pertenencia y dinámicas de rechazo/exclusión en canales de chat (WhatsApp, Telegram, Discord, Slack, Teams).
 

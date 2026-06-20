@@ -1,6 +1,6 @@
-# Estudio de Aprobación Social y Dinámicas de Participación en Chats
+# Dinámicas de Aprobación en Entornos Digitales
 
-Pipeline de análisis psicosocial para diagnosticar dinámicas de aprobación, pertenencia y exclusión en canales de chat (WhatsApp, Telegram, Discord, Slack, Teams, redes sociales).
+Pipeline de análisis psicosocial para diagnosticar dinámicas de aprobación, pertenencia y exclusión en entornos de mensajería digital (WhatsApp, Telegram, Discord, Slack, Teams, redes sociales).
 
 ## Taxonomía de 5 Perfiles
 
