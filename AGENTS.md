@@ -2,7 +2,8 @@
 
 ## Identidad del Proyecto
 
-**Nombre:** Estudio de Aprobación Social y Dinámicas de Participación en Chats
+**Nombre:** Dinámicas de Aprobación
+**Repositorio:** https://github.com/juandelaf1/Dinamicas-De-Aprobacion
 **Objetivo:** Analizar, diagnosticar y proponer soluciones sobre búsqueda de aprobación social, sentido de pertenencia y dinámicas de rechazo/exclusión en canales de chat (WhatsApp, Telegram, Discord, Slack, Teams).
 
 ---
@@ -15,34 +16,37 @@
 | 2026-06-19 | **Primero esquema abstracto, luego evaluar datos reales** — no recopilar sin estructura. | El marco teórico define las variables necesarias; los datos se ajustan al esquema, no al revés. |
 | 2026-06-19 | **Pipeline en Python (pandas + networkx + scikit-learn + streamlit).** Notebook como entregable inicial. | Stack accesible, reproducible, escalable a producto. |
 | 2026-06-19 | **Persistencia de contexto vía AGENTS.md + roadmap.md.** | Trazabilidad entre sesiones. |
+| 2026-06-20 | **Reddit (Pushshift) como fuente principal.** Reply chains + upvotes = mejor sennal de aprobacion. Sin auth. | Bluesky feed público es muy disperso. |
+| 2026-06-20 | **Stop words bilingüe (ES+EN) en NLP.** Los datos Reddit mezclan español e inglés. | `stop_words="english"` dejaba pasar "que", "los", "del". |
+| 2026-06-20 | **Hostilidad requiere >=2 patrones.** Eliminado patrón "generalizacion" por falsos positivos con palabras comunes. | 578/581 usuarios detectados como hostiles era inservible. |
 
 ---
 
 ## Estado Actual del Proyecto
 
-**Fase activa:** Fase 1 (Pipeline Core) — completado
-**Sesión actual:** Clasificador de perfiles funcionando sobre datos reales de Bluesky
-**Próximo paso:** Visualización (scatter plot IA vs PA), sociograma, refinar umbrales de clasificación
+**Fase activa:** Fase 2-3 (NLP + Sociograma + Validación) — completado
+**Sesión actual:** Pipeline completo sobre datos Reddit (581 usuarios, 900 mensajes)
+**Próximo paso:** Extraer más datos, refinar umbrales para Reddit, Fase 4
 
-### Resultados del Pipeline
+### Resultados del Pipeline (Reddit)
 
 | Métrica | Valor |
 |---------|-------|
-| Fuente | Bluesky (API pública) |
-| Posts raíz procesados | 227 / 236 |
-| Mensajes totales extraídos | 378 (227 roots + 151 replies) |
-| Autores únicos | 252 |
-| Interacciones (reply graph) | 191 |
+| Fuente | Reddit (r/argentina, r/changemyview, r/askscience) |
+| Mensajes totales | 900 |
+| Autores únicos | 581 |
+| Interacciones (reply graph) | 239 |
+| Usuarios con 1 mensaje | 79.0% |
 
-**Distribución de perfiles:**
+**Distribución de perfiles (4/5 detectados):**
 | Perfil | Usuarios | % | IA medio | PA medio |
 |--------|----------|---|----------|----------|
-| Núcleo (Líder) | 34 | 13.5% | 6.48 | 0.65 |
-| Buscador de Validación | 0 | 0% | — | — |
-| Integrado Silencioso | 66 | 26.2% | 0.63 | 0.51 |
-| Periférico / Excluido | 152 | 60.3% | 2.32 | 0.00 |
+| Núcleo (Líder) | 63 | 10.8% | 125.76 | 0.60 |
+| Buscador de Validación | 195 | 33.6% | 0.82 | 0.00 |
+| Integrado Silencioso | 137 | 23.6% | 5.76 | 0.45 |
+| Periférico / Excluido | 186 | 32.0% | 19.97 | 0.24 |
 
-> Nota: Buscador de Validación no detectado por esparsicidad de la fuente (Bluesky feed público, no chat cerrado). Usuarios con 1 post = 76.6% del total.
+> Buscador de Validación detectado por primera vez con Reddit. Perfil más numeroso.
 
 ---
 
@@ -88,13 +92,37 @@
 ## Estructura de Carpetas (actual)
 
 ```
-aprobacion-social-chats/
+Dinamicas-De-Aprobacion/
 ├── AGENTS.md              ← Este archivo
 ├── roadmap.md             ← Hoja de ruta maestra (8 fases, 35+ módulos)
-├── data/                  ← Datos crudos y procesados (pendiente)
-├── notebooks/             ← Jupyter Notebooks (pendiente)
-├── src/                   ← Código fuente modular (pendiente)
-└── docs/                  ← Documentación adicional (pendiente)
+├── data/
+│   ├── raw/               ← Datos crudos (JSONL)
+│   │   ├── reddit_merged_20260620.jsonl      ← 900 msgs, 581 users (3 subreddits)
+│   │   ├── bluesky_threads_*.jsonl           ← 378 msgs, 252 users
+│   │   └── reddit_*.jsonl                    ← Extractores individuales
+│   └── resumen_ejecutivo.txt                 ← Reporte completo
+├── src/
+│   ├── pipeline.py         ← Core: features (IA, PA, RRD) + clasificación
+│   ├── sociograma.py       ← Grafo dirigido, centralidad, comunidades
+│   ├── visualizar_sociograma.py ← PNG del sociograma
+│   ├── manifold.py         ← t-SNE, clustering, Random Forest
+│   ├── predictivo.py       ← Churn, escalada hostil, intervención
+│   ├── subgrupos.py        ← Subgrupos excluyentes, puentes
+│   ├── dashboard.py        ← Streamlit (4 tabs)
+│   ├── resumen_final.py    ← Genera resumen ejecutivo
+│   ├── extractors/
+│   │   ├── bsky_extractor.py
+│   │   └── reddit_extractor.py
+│   └── nlp/
+│       ├── stop_words.py       ← SW combinados ES+EN
+│       ├── jerga_interna.py    ← TF-IDF + n-gramas
+│       ├── sentimiento.py      ← Léxico bilingüe
+│       ├── borrados.py         ← Detección de eliminados
+│       ├── estilo_imitativo.py ← Similitud estilística
+│       ├── topic_modeling.py   ← LDA + espiral del silencio
+│       └── analisis_nlp.py     ← Orquestador
+├── docs/                  ← Documentación
+└── roadmap.md
 ```
 
 ---
@@ -112,6 +140,9 @@ aprobacion-social-chats/
 
 *(Aquí registramos decisiones, dudas abiertas y acuerdos de cada sesión)*
 
-- **Sesión 1 (2026-06-19):** Activación del agente con el documento base. Definición del roadmap. Acuerdo de enfoque incremental. Creación de AGENTS.md y estructura de proyecto.
-- **Sesión 2 (2026-06-19):** Diagrama ER detallado (docs/er_diagram.md). 7 entidades con tipos, constraints, cardinalidades, reglas de negocio y ejemplo poblado. Refinado el ER en AGENTS.md.
-- **Sesión 3 (2026-06-19):** Extracción de datos reales de Bluesky vía API pública. Extractor en `src/extractors/bsky_extractor.py`. 378 mensajes de 252 autores. Pipeline de clasificación en `src/pipeline.py` con features IA, RRD, PA. Clasificación funcional (4 de 5 perfiles detectados).
+- **Sesión 1 (2026-06-19):** Definición del roadmap. Enfoque incremental. AGENTS.md + estructura.
+- **Sesión 2 (2026-06-19):** Diagrama ER detallado. 7 entidades con constraints y cardinalidades.
+- **Sesión 3 (2026-06-19):** Extractor Bluesky + pipeline clasificación. 378 msgs, 252 users. 3 perfiles.
+- **Sesión 4 (2026-06-20):** Fase 2 NLP completa (5 módulos). Fase 3 Sociograma, t-SNE, Predictivo, Subgrupos. Dashboard Streamlit.
+- **Sesión 5 (2026-06-20):** Extractor Reddit (Pushshift). 900 msgs, 581 users, 4 perfiles (Buscador Validación aparece). Validación RF 99.5%.
+- **Sesión 6 (2026-06-20):** Fixes calidad: stop words ES+EN en NLP, threshold hostilidad (578→5 users). Repo renombrado a `Dinamicas-De-Aprobacion`.
