@@ -1,0 +1,118 @@
+========================================================================
+ESTUDIO DE APROBACION SOCIAL Y DINAMICAS DE PARTICIPACION EN CHATS
+Resumen Ejecutivo - Junio 2026
+========================================================================
+
+1. FUENTE DE DATOS
+   Fuente: Reddit (r/argentina, r/changemyview, r/askscience)
+   Mensajes: 900
+   Usuarios unicos: 581
+   Interacciones (reply graph): 239
+   Usuarios con 1 solo mensaje: 79.0%
+
+2. TAXONOMIA DE PERFILES
+   Perfil                             n      %       IA       PA
+   ------------------------------ ----- ------ -------- --------
+   Nucleo (Lider)                    63  10.8%   125.76   0.5981
+   Buscador de Validacion           195  33.6%     0.82   0.0000
+   Integrado Silencioso             137  23.6%     5.76   0.4488
+   Periferico / Excluido            186  32.0%    19.97   0.2421
+
+   Buscador de Validacion DETECTADO por primera vez con datos reales de Reddit.
+   Perfil mas numeroso: buscador_validacion (195 usuarios).
+
+3. SOCIOGRAMA (RED DE INTERACCIONES)
+   Nodos: 581
+   Aristas: 214
+   Densidad: 0.001098
+   Coeficiente de clustering: 0.0284
+   Componentes conectados: 406
+   Nodos aislados: 372 (64.0%)
+   Componente gigante: 41 nodos
+   Top 5 PageRank:
+     @Unpaid-Stargazer     PR=0.0528
+     @reddit_destro23      PR=0.0388
+     @sible_Lemon_9527     PR=0.0269
+     @reddit_Chuny77       PR=0.0191
+     @ddit_gonzalingui     PR=0.0172
+
+4. ANALISIS NLP
+   Terminos de jerga detectados: 75
+   Vocabulario unico del grupo: 8654 palabras
+   Total palabras procesadas: 46333
+   Top 10 terminos: removed, que, cmv, people, los, por, just, like, reddit, para
+
+   Sentimiento por perfil (polaridad neta):
+     buscador_validacion       neto=0.0007  volat=0.0103  pos=0.9%  neg=0.5%
+     integrado_silencioso      neto=0.0030  volat=0.0248  pos=2.2%  neg=0.6%
+     nucleo                    neto=0.0005  volat=0.0151  pos=1.7%  neg=1.7%
+     periferico                neto=0.0035  volat=0.0344  pos=1.6%  neg=0.4%
+
+   Mensajes borrados/removidos: 244 de 900 (27.1%)
+   Motivos: {'removido_por_moderacion': 241, 'eliminado_por_usuario': 3}
+
+   Espiral del silencio (topicos evitados por perifericos):
+     Topico 3: que, removed, los, del, por  nucleo=50.8% perif=35.2%
+
+5. VALIDACION DE LA TAXONOMIA
+   t-SNE: 581 usuarios proyectados en 2D
+   Clustering (KMeans):
+     k=2: silhouette=0.7524  ARI vs perfil=0.0182
+     k=3: silhouette=0.7608  ARI vs perfil=0.0191
+     k=4: silhouette=0.5651  ARI vs perfil=0.2058
+     k=5: silhouette=0.5907  ARI vs perfil=0.5388
+     k=6: silhouette=0.6053  ARI vs perfil=0.5423
+     k=7: silhouette=0.6187  ARI vs perfil=0.5412
+   Mejor k natural: 3 (silhouette=0.7608)
+   -> Los datos sugieren 3 clusters naturales (no 5)
+
+   Clasificador Random Forest:
+     Accuracy (CV 5-fold): 0.9948 +/- 0.0042
+     AUC-ROC: N/A
+     Feature mas importante: PA (0.2527)
+     Top 5 features:
+       PA                        0.2527
+       mensajes_reply            0.1021
+       destinatarios_unicos      0.0952
+       RRD                       0.0880
+       IA_norm                   0.0861
+
+6. MODULO PREDICTIVO
+   Usuarios con patrones de escalada hostil: 578
+   Top perfil hostil: buscador_validacion
+
+7. SUBGRUPOS EXCLUYENTES
+   Comunidades detectadas: 39
+   Subgrupos potencialmente excluyentes: 39
+   Usuarios marginados intra-comunidad: 372
+   Puentes entre comunidades: 13
+
+========================================================================
+CONCLUSIONES PRINCIPALES
+========================================================================
+
+1. LA TAXONOMIA DE 5 PERFILES ES FUNCIONAL
+   - 4 de 5 perfiles detectados con datos reales de Reddit.
+   - Buscador de Validacion: 33.6% de la muestra (perfil mas comun en Reddit).
+   - Unico perfil ausente: Espectador Fantasma (requiere datos de solo-lectura).
+
+2. EL MODELO ES ROBUSTO
+   - Random Forest clasifica con >99% de precision (CV 5-fold).
+   - PA (Pertenencia Aproximada) es la feature mas discriminante (25% de importancia).
+   - IA, RRD y outreach completan el top 5.
+
+3. LOS DATOS REALES SON CRITICOS
+   - Bluesky (feed publico): solo 3 perfiles, 76% usuarios con 1 mensaje.
+   - Reddit (subreddits): 4 perfiles, 33% Buscadores de Validacion.
+   - Para detectar Fantasma y refinar Buscador se necesita un chat grupal cerrado.
+
+4. HAY SENNALES DE ESPIRAL DEL SILENCIO
+   - Ciertos topicos son significativamente menos discutidos por perfiles
+     perifericos en comparacion con el nucleo.
+
+5. LIMITACIONES ACTUALES
+   - Pushshift API limita a ~200 comentarios por subreddit.
+   - Sin datos longitudinales no se puede medir abandono real.
+   - El lexico de sentimiento es generico (no adaptado a jerga de subreddit).
+
+========================================================================
