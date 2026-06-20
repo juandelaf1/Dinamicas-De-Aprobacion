@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+*.swo
+*~
+.DS_Store
+temp_upload.jsonl
+raspal_cache.sqlite
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
