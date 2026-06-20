@@ -13,7 +13,7 @@ from nlp.analisis_nlp import AnalisisNLP
 from predictivo import crear_proxy_churn, detectar_escalada_hostil
 from subgrupos import detectar_subgrupos_excluyentes, usuarios_aislados_en_subgrupo, puentes_entre_comunidades
 
-base = os.path.join("data", "raw", "reddit_merged_20260620.jsonl")
+base = os.path.join("data", "raw", "reddit_merged_20260621.jsonl")
 messages = load_messages(base)
 df_u, df_m, df_i = to_er_dataframes(messages)
 df_f = compute_features(df_u, df_m, df_i)
@@ -95,11 +95,13 @@ with open(os.path.join("data", "informe_detallado.md"), "w", encoding="utf-8") a
     w()
     w("| Subreddit | Tipo de Comunidad | Mensajes | Posts |")
     w("|----------|------------------|----------|-------|")
-    w("| r/argentina | Comunidad nacional (argentina, misceláneo) | ~270 | 70 |")
-    w("| r/changemyview | Debate estructurado (inglés, argumentación) | ~330 | 70 |")
-    w("| r/askscience | Divulgación científica (inglés, preguntas/respuestas) | ~300 | 70 |")
+    w("| r/argentina | Comunidad nacional (argentina, misceláneo) | 300 | 200 |")
+    w("| r/changemyview | Debate estructurado (inglés, argumentación) | 300 | 200 |")
+    w("| r/askscience | Divulgación científica (inglés, preguntas/respuestas) | 300 | 200 |")
+    w("| r/AmItheAsshole | Juicio social (inglés, validación) | 300 | 200 |")
+    w("| r/CasualConversation | Charla informal (inglés) | 300 | 200 |")
     w()
-    w("**Total fusionado:** 900 mensajes de 581 autores únicos, con 239 interacciones reply-chain.")
+    w(f"**Total fusionado:** {n_msgs} mensajes de {n_users} autores únicos, con {n_int} interacciones reply-chain.")
     w()
     w("**Por qué Reddit:**")
     w("- Reply chains anidadas que forman conversaciones (no solo publicaciones aisladas)")
@@ -185,23 +187,33 @@ with open(os.path.join("data", "informe_detallado.md"), "w", encoding="utf-8") a
     w()
     w("## 4. Resultados sobre Datos Reddit")
     w()
+    # Compute dynamic profile stats
+    perfil_stats = df_r.groupby("perfil").agg(
+        n=("perfil", "count"),
+        IA_medio=("IA", "mean"),
+        PA_medio=("PA", "mean"),
+    ).reset_index()
+
     w("### 4.1 Distribución de Perfiles")
     w()
-    w("Sobre 581 usuarios de 3 subreddits, se detectaron 4 de 5 perfiles:")
+    w(f"Sobre {n_users} usuarios de 5 subreddits, se detectaron 4 de 5 perfiles:")
     w()
     w(f"| Perfil | n | % | IA medio | PA medio | Interpretación |")
     w(f"|--------|---|---|----------|----------|----------------|")
-    bus_perfil = perfiles.get("buscador_validacion", 0)
-    nuc = perfiles.get("nucleo", 0)
-    inte = perfiles.get("integrado_silencioso", 0)
-    peri = perfiles.get("periferico", 0)
-    w(f"| **Buscador de Validación** | {bus_perfil} | {bus_perfil/n_users*100:.1f}% | 0.82 | 0.0000 | El perfil más numeroso. Usuarios que comentan pero reciben 0 respuestas y casi 0 upvotes. Persisten a pesar de ser ignorados. |")
-    w(f"| **Periférico / Excluido** | {peri} | {peri/n_users*100:.1f}% | 19.97 | 0.2421 | Segundo más numeroso. Reciben algunos upvotes pero tienen baja interacción recíproca. |")
-    w(f"| **Integrado Silencioso** | {inte} | {inte/n_users*100:.1f}% | 5.76 | 0.4488 | Participación moderada pero efectiva. Tienen pertenencia sin buscar atención. |")
-    w(f"| **Núcleo (Líder)** | {nuc} | {nuc/n_users*100:.1f}% | 125.76 | 0.5981 | Minoría que concentra la aprobación social. 11% de usuarios genera la mayoría de la interacción. |")
-    w(f"| **Espectador Fantasma** | 0 | 0% | — | — | No detectable con datos de solo-participantes activos. Requiere datos de miembros silentes (log de lectura). |")
+
+    interp_map = {
+        "buscador_validacion": "Usuarios que comentan pero reciben 0 respuestas y casi 0 upvotes. Persisten a pesar de ser ignorados.",
+        "periferico": "Reciben algunos upvotes pero tienen baja interacción recíproca.",
+        "integrado_silencioso": "Participación moderada pero efectiva. Tienen pertenencia sin buscar atención.",
+        "nucleo": "Minoría que concentra la aprobación social.",
+    }
+    for _, r in perfil_stats.iterrows():
+        pct = r["n"] / n_users * 100
+        w(f"| **{r['perfil']}** | {r['n']} | {pct:.1f}% | {r['IA_medio']:.2f} | {r['PA_medio']:.4f} | {interp_map.get(r['perfil'], '')} |")
+    w(f"| **Espectador Fantasma** | 0 | 0% | — | — | No detectable sin datos de solo-lectura. |")
     w()
-    w(f"**Hallazgo clave:** El Buscador de Validación es el perfil más común en Reddit (33.6%). Esto sugiere que la plataforma tiene una alta tasa de usuarios que buscan aprobación y no la reciben, lo que puede explicar dinámicas de abandono y frustración.")
+    bus_pct = perfiles.get("buscador_validacion", 0) / n_users * 100
+    w(f"**Hallazgo clave:** El Buscador de Validación es el perfil más común en Reddit ({bus_pct:.1f}%). Esto sugiere que la plataforma tiene una alta tasa de usuarios que buscan aprobación y no la reciben, lo que puede explicar dinámicas de abandono y frustración.")
     w()
     w("### 4.2 Sociograma (Red de Interacciones)")
     w()
@@ -212,8 +224,8 @@ with open(os.path.join("data", "informe_detallado.md"), "w", encoding="utf-8") a
     w(f"| Densidad | {aisl['densidad_red']:.6f} | Red extremadamente dispersa (esperable en subreddits abiertos) |")
     w(f"| Coeficiente de clustering | {aisl['coeficiente_clustering']:.4f} | Baja tendencia a formar triángulos de interacción |")
     w(f"| Componentes conectados | {aisl['n_componentes']} | 406 subgrafos inconexos |")
-    w(f"| Nodos aislados (sin replies) | {aisl['n_aislados']} ({aisl['n_aislados']/G.number_of_nodes()*100:.1f}%) | 64% de usuarios nunca reciben respuesta |")
-    w(f"| Componente gigante | {aisl['componentes'][0][1] if aisl['componentes'] else 0} nodos | La conversación más grande tiene ~41 participantes |")
+    w(f"| Nodos aislados (sin replies) | {aisl['n_aislados']} ({aisl['n_aislados']/G.number_of_nodes()*100:.1f}%) | {aisl['n_aislados']/G.number_of_nodes()*100:.0f}% de usuarios nunca reciben respuesta |")
+    w(f"| Componente gigante | {aisl['componentes'][0][1] if aisl['componentes'] else 0} nodos | La conversación más grande tiene ~{aisl['componentes'][0][1] if aisl['componentes'] else 0} participantes |")
     w()
     w("**Top 5 PageRank (usuarios más centrales):**")
     top_pr = df_cent.nlargest(5, "pagerank")
@@ -257,24 +269,18 @@ with open(os.path.join("data", "informe_detallado.md"), "w", encoding="utf-8") a
     w()
     w("Para evaluar si los 5 perfiles teóricos corresponden a agrupaciones naturales en los datos, se comparó el Adjusted Rand Index (ARI) contra clustering no supervisado:")
     w()
-    w("| k | Silhouette | ARI vs Perfiles | Interpretación |")
-    w("|---|-----------|-----------------|----------------|")
+    w("| k | Algoritmo | Silhouette | ARI vs Perfiles |")
+    w("|---|----------|-----------|-----------------|")
     for r in val["resultados"]:
-        if isinstance(r["k"], int):
+        if r["metodo"] in ("kmeans", "gmm", "spectral") and isinstance(r["k_label"], int) and r["silhouette"] is not None:
             ari = r.get("ari_vs_perfil", 0)
-            if r["k"] == 5:
-                interp = "Máximo ARI — los 5 perfiles son la partición más informativa"
-            elif r["k"] == 3:
-                interp = "k natural según silhouette (estructura gruesa: bajo/medio/alto)"
-            else:
-                interp = ""
-            w(f"| {r['k']} | {r['silhouette']:.4f} | {ari:.4f} | {interp} |")
+            w(f"| {r['k_label']} | {r['metodo']} | {r['silhouette']:.4f} | {ari:.4f} |")
     w()
     # Find best ARI
-    mejor_ari = max((r for r in val["resultados"] if isinstance(r.get("k"), int) and "ari_vs_perfil" in r),
+    mejor_ari = max((r for r in val["resultados"] if isinstance(r.get("k_label"), int) and "ari_vs_perfil" in r),
                     key=lambda r: r["ari_vs_perfil"], default=None)
     ari_best = f"{mejor_ari['ari_vs_perfil']:.4f}" if mejor_ari else "N/A"
-    k_best = f"k={mejor_ari['k']}" if mejor_ari else "N/A"
+    k_best = f"k={mejor_ari['k_label']}" if mejor_ari else "N/A"
 
     w(f"**Conclusión:** El silhouette máximo está en k=3 (estructura de 3 grandes grupos), pero el ARI máximo está en {k_best} (ARI={ari_best}). Esto indica que nuestra taxonomía de 5 perfiles es una descomposición informativa de los 3 clusters naturales, añadiendo granularidad psicosocial relevante.")
     w()
@@ -345,7 +351,7 @@ with open(os.path.join("data", "informe_detallado.md"), "w", encoding="utf-8") a
     w()
     w("---")
     w()
-    w(f"*Generado el 20 de junio de 2026 — datos fusionados de 3 subreddits (r/argentina, r/changemyview, r/askscience).*")
+    w(f"*Generado el 21 de junio de 2026 — datos fusionados de 5 subreddits (r/argentina, r/changemyview, r/askscience, r/AmItheAsshole, r/CasualConversation).*")
     w(f"*Repositorio: https://github.com/juandelaf1/Dinamicas-De-Aprobacion*")
 
 print("Informe generado: data/informe_detallado.md")

@@ -38,11 +38,13 @@ Se extrajeron datos de 3 subreddits usando la API pública de Pushshift (sin aut
 
 | Subreddit | Tipo de Comunidad | Mensajes | Posts |
 |----------|------------------|----------|-------|
-| r/argentina | Comunidad nacional (argentina, misceláneo) | ~270 | 70 |
-| r/changemyview | Debate estructurado (inglés, argumentación) | ~330 | 70 |
-| r/askscience | Divulgación científica (inglés, preguntas/respuestas) | ~300 | 70 |
+| r/argentina | Comunidad nacional (argentina, misceláneo) | 300 | 200 |
+| r/changemyview | Debate estructurado (inglés, argumentación) | 300 | 200 |
+| r/askscience | Divulgación científica (inglés, preguntas/respuestas) | 300 | 200 |
+| r/AmItheAsshole | Juicio social (inglés, validación) | 300 | 200 |
+| r/CasualConversation | Charla informal (inglés) | 300 | 200 |
 
-**Total fusionado:** 900 mensajes de 581 autores únicos, con 239 interacciones reply-chain.
+**Total fusionado:** 2854 mensajes de 1272 autores únicos, con 332 interacciones reply-chain.
 
 **Por qué Reddit:**
 - Reply chains anidadas que forman conversaciones (no solo publicaciones aisladas)
@@ -130,61 +132,62 @@ Datos crudos (JSONL)
 
 ### 4.1 Distribución de Perfiles
 
-Sobre 581 usuarios de 3 subreddits, se detectaron 4 de 5 perfiles:
+Sobre 1272 usuarios de 5 subreddits, se detectaron 4 de 5 perfiles:
 
 | Perfil | n | % | IA medio | PA medio | Interpretación |
 |--------|---|---|----------|----------|----------------|
-| **Buscador de Validación** | 195 | 33.6% | 0.82 | 0.0000 | El perfil más numeroso. Usuarios que comentan pero reciben 0 respuestas y casi 0 upvotes. Persisten a pesar de ser ignorados. |
-| **Periférico / Excluido** | 186 | 32.0% | 19.97 | 0.2421 | Segundo más numeroso. Reciben algunos upvotes pero tienen baja interacción recíproca. |
-| **Integrado Silencioso** | 137 | 23.6% | 5.76 | 0.4488 | Participación moderada pero efectiva. Tienen pertenencia sin buscar atención. |
-| **Núcleo (Líder)** | 63 | 10.8% | 125.76 | 0.5981 | Minoría que concentra la aprobación social. 11% de usuarios genera la mayoría de la interacción. |
-| **Espectador Fantasma** | 0 | 0% | — | — | No detectable con datos de solo-participantes activos. Requiere datos de miembros silentes (log de lectura). |
+| **buscador_validacion** | 241 | 18.9% | 0.84 | 0.0028 | Usuarios que comentan pero reciben 0 respuestas y casi 0 upvotes. Persisten a pesar de ser ignorados. |
+| **integrado_silencioso** | 178 | 14.0% | 0.97 | 0.3842 | Participación moderada pero efectiva. Tienen pertenencia sin buscar atención. |
+| **nucleo** | 122 | 9.6% | 65.90 | 0.4186 | Minoría que concentra la aprobación social. |
+| **periferico** | 731 | 57.5% | 25.86 | 0.1732 | Reciben algunos upvotes pero tienen baja interacción recíproca. |
+| **Espectador Fantasma** | 0 | 0% | — | — | No detectable sin datos de solo-lectura. |
 
-**Hallazgo clave:** El Buscador de Validación es el perfil más común en Reddit (33.6%). Esto sugiere que la plataforma tiene una alta tasa de usuarios que buscan aprobación y no la reciben, lo que puede explicar dinámicas de abandono y frustración.
+**Hallazgo clave:** El Buscador de Validación es el perfil más común en Reddit (18.9%). Esto sugiere que la plataforma tiene una alta tasa de usuarios que buscan aprobación y no la reciben, lo que puede explicar dinámicas de abandono y frustración.
 
 ### 4.2 Sociograma (Red de Interacciones)
 
 | Métrica | Valor | Interpretación |
 |---------|-------|----------------|
-| Nodos | 581 | Todos los usuarios que participaron |
-| Aristas (direccionales) | 214 | Replies de un usuario a otro |
-| Densidad | 0.001098 | Red extremadamente dispersa (esperable en subreddits abiertos) |
-| Coeficiente de clustering | 0.0284 | Baja tendencia a formar triángulos de interacción |
-| Componentes conectados | 406 | 406 subgrafos inconexos |
-| Nodos aislados (sin replies) | 372 (64.0%) | 64% de usuarios nunca reciben respuesta |
+| Nodos | 1272 | Todos los usuarios que participaron |
+| Aristas (direccionales) | 307 | Replies de un usuario a otro |
+| Densidad | 0.000341 | Red extremadamente dispersa (esperable en subreddits abiertos) |
+| Coeficiente de clustering | 0.0109 | Baja tendencia a formar triángulos de interacción |
+| Componentes conectados | 1007 | 406 subgrafos inconexos |
+| Nodos aislados (sin replies) | 958 (75.3%) | 75% de usuarios nunca reciben respuesta |
 | Componente gigante | 41 nodos | La conversación más grande tiene ~41 participantes |
 
 **Top 5 PageRank (usuarios más centrales):**
-  - u/Unpaid-Stargazer: PR=0.0528
-  - u/destro23: PR=0.0388
-  - u/Possible_Lemon_9527: PR=0.0269
-  - u/Chuny77: PR=0.0191
-  - u/gonzalingui: PR=0.0172
+  - u/Unpaid-Stargazer: PR=0.0301
+  - u/destro23: PR=0.0220
+  - u/bouquetoftarnations: PR=0.0186
+  - u/Possible_Lemon_9527: PR=0.0153
+  - u/Chuny77: PR=0.0109
 
 ### 4.3 NLP — Lenguaje y Contenido
 
 #### Jerga Interna (TF-IDF)
-- Vocabulario único del corpus: 8654 palabras
-- Total de palabras procesadas: 46333
+- Vocabulario único del corpus: 13360 palabras
+- Total de palabras procesadas: 141943
 - Términos de jerga detectados: 75
-- Top 10 términos específicos del grupo: removed, cmv, people, can, más, just, reddit, now, caba, like
+- Top 10 términos específicos del grupo: removed, people, aita, just, can, cmv, like, más, now, don
 
 #### Sentimiento por Perfil
 | Perfil | Polaridad Neta | Volatilidad Emocional | % Positivos | % Negativos |
 |--------|---------------|----------------------|-------------|-------------|
-| buscador_validacion | 0.0007 | 0.0103 | 0.9% | 0.5% |
-| integrado_silencioso | 0.0030 | 0.0248 | 2.2% | 0.6% |
-| nucleo | 0.0005 | 0.0151 | 1.7% | 1.7% |
-| periferico | 0.0035 | 0.0344 | 1.6% | 0.4% |
+| buscador_validacion | 0.0021 | 0.0168 | 2.6% | 0.7% |
+| integrado_silencioso | 0.0014 | 0.0143 | 2.0% | 0.5% |
+| nucleo | 0.0036 | 0.0296 | 3.4% | 2.2% |
+| periferico | 0.0034 | 0.0304 | 2.3% | 0.7% |
 
 #### Mensajes Borrados/Removidos
-- 27.1% del total (244 de 900)
+- 27.8% del total (793 de 2854)
 - 241 removidos por moderación, 3 eliminados por usuario
 - Alta tasa de moderación en r/changemyview (reglas estrictas de argumentación)
 
 #### Espiral del Silencio
 Se detectaron diferencias significativas en la distribución de tópicos entre perfiles:
-- Tópico 0 (removed, turn, questions): presente en 58.3% del núcleo vs 40.3% de periféricos
+- Tópico 0 (please, question, askscience): presente en 31.8% del núcleo vs 21.5% de periféricos
+- Tópico 3 (más, removed, now): presente en 29.6% del núcleo vs 17.2% de periféricos
 
 ### 4.4 Validación de la Taxonomía
 
@@ -192,27 +195,39 @@ Se detectaron diferencias significativas en la distribución de tópicos entre p
 
 Para evaluar si los 5 perfiles teóricos corresponden a agrupaciones naturales en los datos, se comparó el Adjusted Rand Index (ARI) contra clustering no supervisado:
 
-| k | Silhouette | ARI vs Perfiles | Interpretación |
-|---|-----------|-----------------|----------------|
-| 2 | 0.7524 | 0.0182 |  |
-| 3 | 0.7608 | 0.0191 | k natural según silhouette (estructura gruesa: bajo/medio/alto) |
-| 4 | 0.5651 | 0.2058 |  |
-| 5 | 0.5907 | 0.5388 | Máximo ARI — los 5 perfiles son la partición más informativa |
-| 6 | 0.6053 | 0.5423 |  |
-| 7 | 0.6187 | 0.5412 |  |
+| k | Algoritmo | Silhouette | ARI vs Perfiles |
+|---|----------|-----------|-----------------|
+| 2 | kmeans | 0.8399 | 0.0009 |
+| 3 | kmeans | 0.9274 | 0.0033 |
+| 4 | kmeans | 0.4805 | 0.1250 |
+| 5 | kmeans | 0.5086 | 0.1305 |
+| 6 | kmeans | 0.5698 | 0.2105 |
+| 7 | kmeans | 0.5789 | 0.1972 |
+| 2 | gmm | 0.4502 | 0.1239 |
+| 3 | gmm | 0.4141 | 0.1258 |
+| 4 | gmm | 0.5011 | 0.1592 |
+| 5 | gmm | 0.4908 | 0.1735 |
+| 6 | gmm | 0.4886 | 0.1708 |
+| 7 | gmm | 0.4980 | 0.1759 |
+| 2 | spectral | -0.3155 | -0.0319 |
+| 3 | spectral | -0.3116 | 0.0037 |
+| 4 | spectral | -0.5774 | -0.0278 |
+| 5 | spectral | -0.5002 | -0.0998 |
+| 6 | spectral | -0.0894 | 0.0907 |
+| 7 | spectral | -0.3352 | -0.0408 |
 
-**Conclusión:** El silhouette máximo está en k=3 (estructura de 3 grandes grupos), pero el ARI máximo está en k=6 (ARI=0.5423). Esto indica que nuestra taxonomía de 5 perfiles es una descomposición informativa de los 3 clusters naturales, añadiendo granularidad psicosocial relevante.
+**Conclusión:** El silhouette máximo está en k=3 (estructura de 3 grandes grupos), pero el ARI máximo está en k=6 (ARI=0.2105). Esto indica que nuestra taxonomía de 5 perfiles es una descomposición informativa de los 3 clusters naturales, añadiendo granularidad psicosocial relevante.
 
 #### Clasificador Supervisado (Random Forest)
 
-- Accuracy (5-fold CV): 99.48% ± 0.42%
+- Accuracy (5-fold CV): 99.61% ± 0.25%
 
 **Top 5 features por importancia:**
-  - PA: 25.27%
-  - mensajes_reply: 10.21%
-  - destinatarios_unicos: 9.52%
-  - RRD: 8.80%
-  - IA_norm: 8.61%
+  - PA: 25.48%
+  - mensajes_raiz: 14.43%
+  - IA_norm: 10.09%
+  - IA: 9.69%
+  - destinatarios_unicos: 9.63%
 
 **Interpretación:** PA (Pertenencia Aproximada) es la feature más discriminante por mucho, confirmando que la integración en la red de conversaciones es el principal diferenciador entre perfiles. Las features de mensajes enviados y destinatarios también son relevantes, mientras que IA (Índice de Aprobación) tiene menos peso del esperado — posiblemente porque depende más del comportamiento ajeno que del propio.
 
@@ -221,18 +236,18 @@ Para evaluar si los 5 perfiles teóricos corresponden a agrupaciones naturales e
 #### Riesgo de Abandono (Churn)
 - Se construyó un proxy de abandono basado en señales de inactividad, aislamiento y falta de respuestas.
 - Distribución de riesgo en la muestra:
-  - Alto riesgo: 410 usuarios (70.6%)
-  - Bajo riesgo: 171 usuarios (29.4%)
+  - Alto riesgo: 590 usuarios (46.4%)
+  - Bajo riesgo: 682 usuarios (53.6%)
 
 #### Escalada Hostil
-- Usuarios con patrones de agresividad lingüística: 5 de 581 (0.9%)
+- Usuarios con patrones de agresividad lingüística: 12 de 1272 (0.9%)
 - Perfil predominante entre usuarios hostiles: periferico
 
 ### 4.6 Subgrupos Excluyentes
-- Comunidades detectadas (Louvain): 38
-- Subgrupos con alta exclusividad: 38
-- Usuarios marginados intra-comunidad: 372
-- Puentes entre comunidades: 11 usuarios
+- Comunidades detectadas (Louvain): 52
+- Subgrupos con alta exclusividad: 52
+- Usuarios marginados intra-comunidad: 958
+- Puentes entre comunidades: 8 usuarios
 
 ---
 
@@ -270,5 +285,5 @@ Para evaluar si los 5 perfiles teóricos corresponden a agrupaciones naturales e
 
 ---
 
-*Generado el 20 de junio de 2026 — datos fusionados de 3 subreddits (r/argentina, r/changemyview, r/askscience).*
+*Generado el 21 de junio de 2026 — datos fusionados de 5 subreddits (r/argentina, r/changemyview, r/askscience, r/AmItheAsshole, r/CasualConversation).*
 *Repositorio: https://github.com/juandelaf1/Dinamicas-De-Aprobacion*

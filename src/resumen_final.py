@@ -13,7 +13,7 @@ from predictivo import crear_proxy_churn, entrenar_modelo_riesgo, predecir_riesg
 from subgrupos import detectar_subgrupos_excluyentes, usuarios_aislados_en_subgrupo, puentes_entre_comunidades
 
 base = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                    "data", "raw", "reddit_merged_20260620.jsonl")
+                    "data", "raw", "reddit_merged_20260621.jsonl")
 messages = load_messages(base)
 df_u, df_m, df_i = to_er_dataframes(messages)
 df_f = compute_features(df_u, df_m, df_i)
@@ -24,7 +24,7 @@ n_msgs = len(df_m)
 n_users = len(df_r)
 n_interacciones = len(df_i)
 pct_1msg = (df_f["mensajes_totales"] == 1).mean() * 100
-fuente = "Reddit (r/argentina, r/changemyview, r/askscience)"
+fuente = "Reddit (r/argentina, r/changemyview, r/askscience, r/AmItheAsshole, r/CasualConversation)"
 
 # --- 2. PERFILES ---
 perfiles = df_r["perfil"].value_counts()
