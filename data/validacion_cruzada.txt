@@ -1,0 +1,33 @@
+Validacion cruzada de taxonomia
+4 algoritmos: KMeans, GMM, Spectral, DBSCAN
+Usuarios: 581
+
+Mejor config: kmeans k=3 (sil=0.7608)
+ARI max vs perfiles: 0.5423
+NMI max vs perfiles: 0.5858
+Discrepancias k=5: 177 (30.5%)
+    kmeans k=2        sil=0.7524  ari=0.0182    nmi=0.0504  
+    kmeans k=3        sil=0.7608  ari=0.0191    nmi=0.0563  
+    kmeans k=4        sil=0.5651  ari=0.2058    nmi=0.3392  
+    kmeans k=5        sil=0.5907  ari=0.5388    nmi=0.5858  
+    kmeans k=6        sil=0.6053  ari=0.5423    nmi=0.5838  
+    kmeans k=7        sil=0.6187  ari=0.5412    nmi=0.5773  
+       gmm k=2        sil=0.3679  ari=0.4045    nmi=0.5187  
+       gmm k=3        sil=0.4293  ari=0.4312    nmi=0.5038  
+       gmm k=4        sil=0.4870  ari=0.4625    nmi=0.4757  
+       gmm k=5        sil=0.5565  ari=0.528     nmi=0.5272  
+       gmm k=6        sil=0.5134  ari=0.4875    nmi=0.4777  
+       gmm k=7        sil=0.5071  ari=0.4911    nmi=0.488   
+  spectral k=2        sil=-0.1305  ari=0.0416    nmi=0.1935  
+  spectral k=3        sil=-0.3209  ari=0.0254    nmi=0.2313  
+  spectral k=4        sil=-0.3020  ari=0.0696    nmi=0.3066  
+  spectral k=5        sil=0.1557  ari=0.2767    nmi=0.4458  
+  spectral k=6        sil=-0.2182  ari=0.3393    nmi=0.5048  
+  spectral k=7        sil=-0.1815  ari=0.3786    nmi=0.5429  
+    dbscan k=eps=0.3  sil=0.8608  ari=0.5829    nmi=0.5873  
+    dbscan k=eps=0.5  sil=0.8698  ari=0.6226    nmi=0.5906  
+    dbscan k=eps=0.8  sil=0.8418  ari=0.6292    nmi=0.5971  
+    dbscan k=eps=1.0  sil=0.8342  ari=0.6292    nmi=0.5974  
+    dbscan k=eps=1.5  sil=0.4897  ari=0.4219    nmi=0.4724  
+    dbscan k=eps=2.0  sil=0.7127  ari=0.038     nmi=0.075   
+    dbscan k=eps=3.0  sil=0.7253  ari=0.0321    nmi=0.0733  

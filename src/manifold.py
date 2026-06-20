@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans, DBSCAN
-from sklearn.metrics import silhouette_score, adjusted_rand_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, DBSCAN, SpectralClustering
+from sklearn.mixture import GaussianMixture
+from sklearn.metrics import silhouette_score, adjusted_rand_score, normalized_mutual_info_score
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 
@@ -54,83 +55,133 @@ def reducir_dimension(
 def validar_clusters(
     df_features: pd.DataFrame,
     cols_features: list = None,
-    metodo_clustering: str = "kmeans",
     n_clusters_range: range = range(2, 8),
+    incluir_gmm: bool = True,
+    incluir_spectral: bool = True,
+    incluir_dbscan: bool = True,
 ) -> dict:
     """
-    Valida cuantos clusters naturales existen en los datos.
+    Valida cuantos clusters naturales existen en los datos usando
+    multiples algoritmos: KMeans, GMM, Spectral, DBSCAN.
 
     Para cada k en n_clusters_range, calcula:
     - silhouette_score
-    - inercia (KMeans)
-    - correlacion con perfil actual (ajusted_rand_score)
+    - ARI vs perfil actual
+    - NMI vs perfil actual
 
-    Retorna dict con scores y mejor k.
+    Retorna dict con scores, mejor k (por silhouette) y etiquetas.
     """
     if cols_features is None:
         cols_features = [c for c in df_features.columns
                          if c not in ("id_usuario", "perfil", "handle", "nombre")]
+
     X = df_features[cols_features].select_dtypes(include=[np.number]).fillna(0).values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    resultados = []
-    for k in n_clusters_range:
-        if metodo_clustering == "kmeans":
-            model = KMeans(n_clusters=k, random_state=42, n_init=10)
-            etiquetas = model.fit_predict(X_scaled)
-            sil = silhouette_score(X_scaled, etiquetas)
-            resultados.append({
-                "k": k,
-                "silhouette": round(sil, 4),
-                "inercia": round(model.inertia_, 2),
-            })
-        elif metodo_clustering == "dbscan":
-            continue  # DBSCAN no tiene parametro k
-
-    # Mejor k por silhouette
-    if resultados:
-        mejor_k = max(resultados, key=lambda r: r["silhouette"])
-    else:
-        mejor_k = None
-
-    # DBSCAN
-    if metodo_clustering in ("dbscan", "ambos"):
-        for eps in [0.3, 0.5, 0.8, 1.0, 1.5]:
-            model = DBSCAN(eps=eps, min_samples=3)
-            etiquetas = model.fit_predict(X_scaled)
-            n_clusters = len(set(etiquetas)) - (1 if -1 in etiquetas else 0)
-            n_ruido = sum(etiquetas == -1)
-            sil = None
-            if n_clusters > 1 and n_clusters < len(X):
-                try:
-                    sil = round(silhouette_score(X_scaled, etiquetas), 4)
-                except Exception:
-                    pass
-            resultados.append({
-                "k": f"DBSCAN eps={eps}",
-                "silhouette": sil,
-                "n_clusters": n_clusters,
-                "n_ruido": n_ruido,
-            })
-
-    # Correlacion con perfil actual (si existe)
+    # Codificar perfiles actuales para comparacion
     if "perfil" in df_features.columns:
-        from sklearn.preprocessing import LabelEncoder
         le = LabelEncoder()
         perfil_encoded = le.fit_transform(df_features["perfil"])
-        for r in resultados:
-            if isinstance(r["k"], int):
-                model = KMeans(n_clusters=r["k"], random_state=42, n_init=10)
+        clases_perfil = le.classes_
+    else:
+        perfil_encoded = None
+        clases_perfil = None
+
+    resultados = []
+
+    def _evaluar(etiquetas, metodo, k_label):
+        """Evalua un clustering y retorna dict con metricas."""
+        n_uniq = len(set(etiquetas)) - (1 if -1 in etiquetas else 0)
+        n_ruido = sum(etiquetas == -1) if -1 in etiquetas else 0
+        mask_valido = etiquetas != -1
+        sil = None
+        if n_uniq > 1 and n_uniq < len(etiquetas):
+            try:
+                if sum(mask_valido) > 1:
+                    sil = round(silhouette_score(X_scaled[mask_valido],
+                                                  etiquetas[mask_valido]), 4)
+                else:
+                    sil = round(silhouette_score(X_scaled, etiquetas), 4)
+            except Exception:
+                pass
+        ari = None
+        nmi = None
+        if perfil_encoded is not None and n_uniq > 1:
+            ari = round(adjusted_rand_score(perfil_encoded, etiquetas), 4)
+            try:
+                nmi = round(normalized_mutual_info_score(perfil_encoded, etiquetas), 4)
+            except Exception:
+                pass
+        r = {
+            "metodo": metodo,
+            "k_label": k_label,
+            "n_clusters": n_uniq,
+            "n_ruido": n_ruido,
+            "silhouette": sil,
+            "ari_vs_perfil": ari,
+            "nmi_vs_perfil": nmi,
+        }
+        if metodo == "kmeans" and isinstance(k_label, int):
+            model = KMeans(n_clusters=k_label, random_state=42, n_init=10)
+            model.fit(X_scaled)
+            r["inercia"] = round(model.inertia_, 2)
+        return r
+
+    # 1. KMeans
+    for k in n_clusters_range:
+        model = KMeans(n_clusters=k, random_state=42, n_init=10)
+        etiquetas = model.fit_predict(X_scaled)
+        r = _evaluar(etiquetas, "kmeans", k)
+        r["inercia"] = round(model.inertia_, 2)
+        resultados.append(r)
+
+    # 2. GMM (Gaussian Mixture)
+    if incluir_gmm:
+        for k in n_clusters_range:
+            model = GaussianMixture(n_components=k, random_state=42, max_iter=200)
+            etiquetas = model.fit_predict(X_scaled)
+            r = _evaluar(etiquetas, "gmm", k)
+            r["bic"] = round(model.bic(X_scaled), 2)
+            resultados.append(r)
+
+    # 3. Spectral Clustering
+    if incluir_spectral:
+        max_k = max(n_clusters_range)
+        if max_k < len(X_scaled):
+            for k in n_clusters_range:
+                model = SpectralClustering(n_clusters=k, random_state=42,
+                                           affinity="nearest_neighbors",
+                                           n_neighbors=min(15, len(X_scaled) - 1))
                 etiquetas = model.fit_predict(X_scaled)
-                r["ari_vs_perfil"] = round(adjusted_rand_score(perfil_encoded, etiquetas), 4)
-            else:
-                r["ari_vs_perfil"] = None
+                resultados.append(_evaluar(etiquetas, "spectral", k))
+
+    # 4. DBSCAN (barrido de eps)
+    if incluir_dbscan:
+        for eps in [0.3, 0.5, 0.8, 1.0, 1.5, 2.0, 3.0]:
+            model = DBSCAN(eps=eps, min_samples=3)
+            etiquetas = model.fit_predict(X_scaled)
+            r = _evaluar(etiquetas, "dbscan", f"eps={eps}")
+            resultados.append(r)
+
+    # Mejor k global (promedio de silhouette entre metodos)
+    mejores_por_metodo = {}
+    for r in resultados:
+        if r["silhouette"] is not None:
+            metodo = r["metodo"]
+            if metodo not in mejores_por_metodo or r["silhouette"] > mejores_por_metodo[metodo]["silhouette"]:
+                mejores_por_metodo[metodo] = r
+
+    # Mejor KMeans
+    kmeans_results = [r for r in resultados if r["metodo"] == "kmeans" and r["silhouette"] is not None]
+    mejor_kmeans = max(kmeans_results, key=lambda r: r["silhouette"]) if kmeans_results else None
 
     return {
         "resultados": resultados,
-        "mejor_k": mejor_k,
+        "mejor_kmeans": mejor_kmeans,
+        "mejores_por_metodo": mejores_por_metodo,
         "X_scaled": X_scaled,
+        "clases_perfil": clases_perfil,
     }
 
 
