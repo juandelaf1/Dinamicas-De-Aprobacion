@@ -4,6 +4,7 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nlp.stop_words import STOP_WORDS
 
 
 TOKEN_PATTERN = re.compile(r"(?u)\b\w{3,}\b")
@@ -41,7 +42,7 @@ def detectar_jerga_interna(
         max_features=max_features,
         min_df=2,
         max_df=0.85,
-        stop_words="english",
+        stop_words=STOP_WORDS,
     )
     tfidf_matrix = vectorizer.fit_transform(textos_limpios)
     vocabulary = vectorizer.vocabulary_

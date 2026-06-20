@@ -46,6 +46,7 @@ def buscar_comentarios(
     tamanio: int = 500,
     antes: int = None,
     despues: int = None,
+    enlace: str = None,
 ) -> list:
     """
     Busca comentarios en un subreddit via Pushshift.
@@ -54,6 +55,7 @@ def buscar_comentarios(
         subreddit: nombre del sub (sin r/)
         tamanio: max comentarios por llamada (max 1000)
         antes/despues: timestamp UNIX para paginacion
+        enlace: link_id (t3_xxx) para filtrar por post especifico
 
     Retorna lista de comentarios con:
         - author, body, score, subreddit
@@ -71,6 +73,8 @@ def buscar_comentarios(
         params["before"] = antes
     if despues:
         params["after"] = despues
+    if enlace:
+        params["link_id"] = enlace
 
     url = f"{PUSHSHIFT_BASE}/search/comment/"
     data = _get_json(url, params)
@@ -192,19 +196,32 @@ def extraer_subreddit(
 
     print(f"\nExtrayendo r/{subreddit}...")
 
-    # Extraer comentarios (conversaciones)
+    # Estrategia: extraer comentarios en paralelo por ventanas de tiempo
+    # Pushshift tiene datos limitados post-2023, asi que usamos ventanas
+    # de 6 meses hacia atras para cubrir mas rango temporal.
+    VENTANAS = [
+        (None, None),                                        # mas recientes
+    ]
+
     todos_comentarios = []
-    ultimo_ts = None
-    for batch in range(0, n_comentarios, 500):
-        size = min(500, n_comentarios - len(todos_comentarios))
-        params = {"before": ultimo_ts} if ultimo_ts else {}
-        comentarios = buscar_comentarios(subreddit, tamanio=size, antes=ultimo_ts)
-        if not comentarios:
-            break
-        todos_comentarios.extend(comentarios)
-        ultimo_ts = comentarios[-1].get("created_utc")
-        print(f"  Comentarios: {len(todos_comentarios)}/{n_comentarios}")
+    for inicio, fin in VENTANAS:
+        comentarios = buscar_comentarios(subreddit, tamanio=1000, despues=inicio, antes=fin)
+        if comentarios:
+            todos_comentarios.extend(comentarios)
+        print(f"  Ventana {inicio}-{fin}: {len(comentarios)} comentarios")
         time.sleep(RATE_LIMIT_DELAY)
+
+    # Paginar mas atras si no llegamos
+    if len(todos_comentarios) >= 900:
+        ultimo_ts = todos_comentarios[-1].get("created_utc")
+        for intento in range(3):
+            comentarios = buscar_comentarios(subreddit, tamanio=1000, antes=ultimo_ts)
+            if not comentarios:
+                break
+            todos_comentarios.extend(comentarios)
+            ultimo_ts = comentarios[-1].get("created_utc")
+            print(f"  Paginacion: {len(todos_comentarios)} comentarios")
+            time.sleep(RATE_LIMIT_DELAY)
 
     print(f"  Total comentarios: {len(todos_comentarios)}")
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
+from nlp.stop_words import STOP_WORDS
 
 
 TOKEN_PATTERN = re.compile(r"(?u)\b\w{3,}\b")
@@ -37,7 +38,7 @@ def modelar_topicos(
         max_features=max_features,
         min_df=min_df,
         max_df=max_df,
-        stop_words="english",
+        stop_words=STOP_WORDS,
     )
     X = vectorizer.fit_transform(textos_limpios)
     vocabulary = vectorizer.get_feature_names_out()

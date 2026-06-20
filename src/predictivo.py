@@ -183,11 +183,11 @@ def detectar_escalada_hostil(
 
     patrones_hostiles = [
         (r"\b(idiota|estupido|imbecil|mierda|puto|maldito)\b", "insulto_directo"),
-        (r"(calla|callate|vete|largate)", "orden_agresiva"),
-        (r"[A-Z]{4,}", "gritos"),  # 4+ mayusculas seguidas
-        (r"(!\s*!){2,}|(\?\s*\?){2,}|(\?!|!\?)", "puntuacion_agresiva"),
-        (r"\b(nunca|siempre|nadie|todos)\b", "generalizacion"),
-        (r"\b(odio|detesto|asco|asqueroso|repugna)\b", "lenguaje_asco"),
+        (r"\b(callate|vete|largate|cerra el orto)\b", "orden_agresiva"),
+        (r"[A-Z]{5,}", "gritos"),
+        (r"(!\s*!){3,}|(\?\s*\?){3,}", "puntuacion_agresiva"),
+        (r"\b(odio|detesto|asco|asqueroso|repugna|repudio)\b", "lenguaje_asco"),
+        (r"\b(vos|tu|usted)\s+(siempre|nunca|jamas)\b", "acusacion_generalizante"),
     ]
 
     resultados = []
@@ -199,7 +199,7 @@ def detectar_escalada_hostil(
             if re.search(patron, texto, re.IGNORECASE):
                 puntaje += 1
                 detectados.append(nombre)
-        if puntaje > 0:
+        if puntaje >= 2:
             resultados.append({
                 "id_usuario": msg.get("id_usuario", ""),
                 "id_mensaje": msg.get("id_mensaje", ""),

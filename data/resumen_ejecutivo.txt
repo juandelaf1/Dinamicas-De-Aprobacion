@@ -40,7 +40,7 @@ Resumen Ejecutivo - Junio 2026
    Terminos de jerga detectados: 75
    Vocabulario unico del grupo: 8654 palabras
    Total palabras procesadas: 46333
-   Top 10 terminos: removed, que, cmv, people, los, por, just, like, reddit, para
+   Top 10 terminos: removed, cmv, people, can, más, just, reddit, now, caba, like
 
    Sentimiento por perfil (polaridad neta):
      buscador_validacion       neto=0.0007  volat=0.0103  pos=0.9%  neg=0.5%
@@ -52,7 +52,7 @@ Resumen Ejecutivo - Junio 2026
    Motivos: {'removido_por_moderacion': 241, 'eliminado_por_usuario': 3}
 
    Espiral del silencio (topicos evitados por perifericos):
-     Topico 3: que, removed, los, del, por  nucleo=50.8% perif=35.2%
+     Topico 0: removed, turn, questions, automatically, please  nucleo=58.3% perif=40.3%
 
 5. VALIDACION DE LA TAXONOMIA
    t-SNE: 581 usuarios proyectados en 2D
@@ -78,8 +78,8 @@ Resumen Ejecutivo - Junio 2026
        IA_norm                   0.0861
 
 6. MODULO PREDICTIVO
-   Usuarios con patrones de escalada hostil: 578
-   Top perfil hostil: buscador_validacion
+   Usuarios con patrones de escalada hostil: 5
+   Top perfil hostil: periferico
 
 7. SUBGRUPOS EXCLUYENTES
    Comunidades detectadas: 39
